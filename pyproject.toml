@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "weread-keepalive"
+version = "0.1.0"
+description = "WeRead login-state auto keepalive for we-mp-rss (weread_mp mode)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "playwright>=1.40",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+]
+
+[project.scripts]
+weread-keepalive-refresh = "weread_keepalive.refresher:refresh_cookie"
+weread-keepalive-agent = "weread_keepalive.agent:main"
+weread-keepalive-monitor = "weread_keepalive.monitor:main"
+weread-keepalive-qr-login = "weread_keepalive.qr_push:run_login_session"
+weread-keepalive-daemon = "weread_keepalive.daemon:main"
+
+[tool.setuptools]
+packages = ["weread_keepalive"]

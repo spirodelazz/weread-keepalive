@@ -1,0 +1,9 @@
+# local runtime data & secrets
+data/
+.env
+__pycache__/
+*.pyc
+.venv/
+build/
+dist/
+*.egg-info/

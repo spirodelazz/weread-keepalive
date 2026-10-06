@@ -1,0 +1,46 @@
+# weread-keepalive + we-mp-rss 一键部署。
+# 用法：把本文件与 .env 放在同一目录，`docker compose up -d --build`。
+# .env 至少需要：WEREAD_AGENT_TOKEN（必填，代理端口不做无鉴权暴露）
+# 以及飞书扫码推送配置（FEISHU_APP_ID / FEISHU_APP_SECRET / FEISHU_QR_RECEIVE_ID）。
+# 若 we-mp-rss 已另行部署，删掉下面的 we-mp-rss 服务、并把两边的 data 卷指到同一目录即可。
+
+services:
+  weread-keepalive:
+    build: .
+    container_name: weread-keepalive
+    restart: unless-stopped
+    environment:
+      # 数据卷内的路径（容器视角）；与 we-mp-rss 挂载同一物理目录
+      WEREAD_LIC_PATH: /app/data/wx.lic
+      WEREAD_PROFILE_DIR: /app/data/weread-chrome-profile
+      # 代理监听：容器互联必须绑 0.0.0.0，token 是硬性安全要求（agent 会强制检查）
+      WEREAD_AGENT_HOST: 0.0.0.0
+      WEREAD_AGENT_PORT: "9876"
+      WEREAD_AGENT_TOKEN: ${WEREAD_AGENT_TOKEN:?请在 .env 中设置 WEREAD_AGENT_TOKEN}
+      # 登录态失效时自动把登录二维码推送到飞书（远程扫码重建）
+      WEREAD_QR_PUSH_ON_EXPIRE: "1"
+      FEISHU_APP_ID: ${FEISHU_APP_ID:-}
+      FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:-}
+      FEISHU_QR_RECEIVE_ID: ${FEISHU_QR_RECEIVE_ID:-}
+      FEISHU_WEBHOOK: ${FEISHU_WEBHOOK:-}
+      FEISHU_SECRET: ${FEISHU_SECRET:-}
+      TZ: Asia/Shanghai
+    volumes:
+      - ./data:/app/data
+    ports:
+      # 宿主机/局域网触发刷新或查看扫码会话状态用；不需要可删掉这行
+      - "127.0.0.1:9876:9876"
+
+  we-mp-rss:
+    image: rachelos/we-mp-rss:latest
+    container_name: we-mp-rss
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # 微信读书采集模式；注意 WEREAD_COOKIE 必须留空，让 wx.lic 接管登录态
+      WE_MP_RSS_GATHER_MODEL: weread_mp
+      WE_MP_RSS_GATHER_CONTENT: "true"
+      TZ: Asia/Shanghai
+    volumes:
+      - ./data:/app/data
