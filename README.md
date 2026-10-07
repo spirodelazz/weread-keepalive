@@ -1,6 +1,17 @@
-# weread-keepalive
+<div align="center">
 
-微信读书登录态自动续期工具，专为 [we-mp-rss](https://github.com/rachelos/we-mp-rss) 的 `weread_mp`（微信读书）采集模式服务。方案经过长期生产环境实战验证，工程细节中沉淀了不少踩坑教训（见下文）。
+# 📚 weread-keepalive
+
+**微信读书登录态自动续期 · 为 we-mp-rss 采集模式护航**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-8B5CF6?style=flat&logo=opensourceinitiative&logoColor=white)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat&logo=python&logoColor=white)]()
+[![Playwright](https://img.shields.io/badge/Playwright-Headless%20Keepalive-2EAD33?style=flat&logo=playwright&logoColor=white)]()
+[![we-mp-rss](https://img.shields.io/badge/Serves-we--mp--rss-F59E0B?style=flat)]()
+
+</div>
+
+专为 [we-mp-rss](https://github.com/rachelos/we-mp-rss) 的 `weread_mp`（微信读书）采集模式服务：自动续期登录态。方案经过长期生产环境实战验证，工程细节中沉淀了不少踩坑教训（见下文）。
 
 ## 解决什么问题
 
@@ -228,3 +239,7 @@ docker compose exec we-mp-rss curl -s -X POST http://weread-keepalive:9876/refre
 ## 免责声明
 
 本工具使用微信读书（weread.qq.com）的非公开内部接口做登录态保活，该接口未经腾讯官方文档化或授权。请仅用于个人订阅场景，控制访问频率，风险自负。
+
+## License
+
+[MIT](LICENSE)。

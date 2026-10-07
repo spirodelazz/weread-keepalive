@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""qr_push 单元测试：从 robin tests/test_weread_qr_push.py 移植的核心契约。
+"""qr_push 单元测试：推送器核心行为契约。
 
 覆盖推送器最容易出错的点：内容去重（同图不重发）、限频（渲染抖动导致的
 假变化）、上限（防刷屏）、#login 兜底（整轮一次）、结果卡闭环（绿/橙、
@@ -133,7 +133,7 @@ class CaptureTests(unittest.TestCase):
         self.assertEqual(module.capture_qr_bytes(page), b"main-element")
 
     def test_capture_falls_back_to_panel(self):
-        """纯码元素都抓不到时，退回 qrconnect 面板整块（robin 实战口径）。"""
+        """纯码元素都抓不到时，退回 qrconnect 面板整块（生产实战口径）。"""
         page = _FakePage(elements={"iframe[src*='qrconnect']": b"panel-bytes"})
         self.assertEqual(module.capture_qr_bytes(page), b"panel-bytes")
 
@@ -288,8 +288,8 @@ class SessionGateTests(unittest.TestCase):
             result = module.start_session("测试")
         self.assertFalse(result["triggered"])
 
-    def test_signature_matches_robin_algorithm(self):
-        """签名口径与 robin 完全一致（timestamp\\nsecret 的 HMAC-SHA256）。"""
+    def test_signature_matches_expected_algorithm(self):
+        """签名口径（timestamp\\nsecret 的 HMAC-SHA256）。"""
         sig = module.feishu_signature("secret-x", 1700000000)
         import base64
         import hashlib

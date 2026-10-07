@@ -53,7 +53,7 @@ from .wxlic import (
 def _make_qr_pusher(verbose: bool = True):
     """扫码会话里把登录二维码实时推飞书；未启用/导入失败返回 None（绝不影响刷新）。
 
-    方案与 robin 项目同源：桌面宿主机弹窗扫码的同时二维码也会推到飞书（人不在
+    桌面宿主机弹窗扫码的同时二维码也会推到飞书（人不在
     电脑前也能远程扫）；无显示器的容器/NAS 则直接走无头会话 + 推送。
     """
     try:
@@ -267,7 +267,7 @@ def _refresh_impl(
                     while time.time() < deadline:
                         if pusher is not None:
                             # 扫码窗口开着的同时把二维码实时推飞书：人不在电脑前
-                            # 也能用手机扫飞书里的码远程完成重建（robin 同款）。
+                            # 也能用手机扫飞书里的码远程完成重建。
                             try:
                                 pusher.push_if_changed(page)
                             except Exception as exc:

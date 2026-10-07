@@ -6,8 +6,7 @@ profile 登录态失效后，唯一根治办法是打开微信读书页面扫码
 宿主机可以弹可见窗口，但容器 / NAS / 远程服务器没有显示器，弹了也没人看得见。
 登录二维码本质是一张图片：扫码会话里实时把页面上的二维码截下来推到飞书，
 用户用微信「扫一扫 → 相册」识别图片完成登录，cookie 自动写回 wx.lic，
-全程无需在设备前。方案与 robin 项目的 ``scripts/shared/weread_qr_push.py``
-同源（生产验证过的选择器、去重、限频参数都照搬）。
+全程无需在设备前。选择器、去重、限频等参数均为生产环境实测沉淀。
 
 飞书渠道的关键事实（决定了下面的实现分层）：
 
@@ -19,7 +18,7 @@ profile 登录态失效后，唯一根治办法是打开微信读书页面扫码
   （``FEISHU_WEBHOOK``，可配 ``FEISHU_SECRET`` 签名）。webhook 卡片引用应用
   上传的 image_key 实测可用。
 
-设计要点（继承 robin 的实战教训）：
+设计要点（沉淀自生产环境实战教训）：
 
 - 二维码会过期自动刷新：按截图内容 sha256 去重 + 最小重推间隔（渲染抖动会
   造成假变化），变了才重推；单会话推送上限防刷屏；
@@ -50,7 +49,7 @@ from .wxlic import dedupe_cookie, file_lock, load_weread_data, refresh_url_of, s
 WEBHOOK_TIMEOUT_SECONDS = 20
 APP_TIMEOUT_SECONDS = 20
 
-# qrconnect iframe 整块：robin 实战口径的兜底——自带白底静区 +「请使用微信扫一扫」
+# qrconnect iframe 整块：生产实战口径的兜底——自带白底静区 +「请使用微信扫一扫」
 # 提示、尺寸充足（实测 ~300px），解码器实测可扫；透明区域可能透出底层页面内容，
 # 仅在原生码图与纯元素截图都拿不到时使用。
 MAIN_PANEL_SELECTORS = (
@@ -184,7 +183,7 @@ def feishu_tenant_access_token() -> str:
 def _encode_multipart_form_data(
     fields: dict[str, str], files: list[tuple[str, str, str, bytes]]
 ) -> tuple[bytes, str]:
-    """手搓 multipart/form-data（标准库没有该编码器，实现与 robin 同源）。"""
+    """手搓 multipart/form-data（标准库没有该编码器）。"""
     boundary = f"----WereadKeepaliveBoundary{uuid.uuid4().hex}"
     parts: list[bytes] = []
     for name, value in fields.items():
@@ -207,7 +206,7 @@ def _encode_multipart_form_data(
 
 
 def feishu_upload_image(image_bytes: bytes, filename: str = "weread-login-qrcode.png") -> str:
-    """上传图片换 image_key；新旧两个上传端点逐个尝试（与 robin 同源）。"""
+    """上传图片换 image_key；新旧两个上传端点逐个尝试。"""
     token = feishu_tenant_access_token()
     if not token:
         return ""
@@ -319,7 +318,7 @@ def feishu_list_chats() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# 二维码捕获（选择器与逐级兜底与 robin 同源）
+# 二维码捕获（选择器与逐级兜底均为实测沉淀）
 # ---------------------------------------------------------------------------
 
 def _shot_first(page_like, selectors) -> bytes | None:
@@ -386,7 +385,7 @@ def capture_qr_bytes(page) -> bytes | None:
        ——首选。元素截图只有 ~172px 显示尺寸，高密度码被压糊，手机实测扫不出；
     2. 子 frame 的 ``img.qrcode`` 等纯码元素截图（改版兜底，尺寸小）；
     3. 主 frame 的二维码元素候选截图（改版兜底）；
-    4. qrconnect iframe 整块截图（robin 实战口径：自带静区与提示，实测可扫；
+    4. qrconnect iframe 整块截图（自带静区与提示，实测可扫；
        透明区域可能带出底层页面内容，仅在前三级都拿不到时使用）；
     5. 整页截图（最后兜底）。
     """
